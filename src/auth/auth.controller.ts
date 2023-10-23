@@ -11,7 +11,7 @@ import {
 	HttpCode,
 } from '@nestjs/common'
 import { AuthService } from './auth.service'
-import { AuthDto } from './dto/auth.dto'
+import { AuthDto, LoginDto } from './dto/auth.dto'
 import { UpdateAuthDto } from './dto/update-auth.dto'
 
 @Controller('auth')
@@ -24,10 +24,11 @@ export class AuthController {
 	async register(@Body() createAuthDto: AuthDto) {
 		return this.authService.register(createAuthDto)
 	}
-
-	@Get()
-	findAll() {
-		return this.authService.findAll()
+	@UsePipes(new ValidationPipe())
+	@HttpCode(200)
+	@Post('login')
+	async login(@Body() loginDto: LoginDto) {
+		return this.authService.login(loginDto)
 	}
 
 	@Get(':id')
