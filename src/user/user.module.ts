@@ -1,8 +1,9 @@
+import { WorkModel } from '../work/work.model';
 import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { TypegooseModule } from 'nestjs-typegoose';
-import { UserModel } from './Schemas/user.model';
+import { ContractorModel, UserModel, ApplicantModel } from './Schemas/user.model';
 
 @Module({
   controllers: [UserController],
@@ -14,7 +15,25 @@ import { UserModel } from './Schemas/user.model';
         schemaOptions: {
         collection: 'User',
         },
-      },
+      },  
+      {
+        typegooseClass: ContractorModel,
+        schemaOptions: {
+        collection: 'Contractor',
+        },
+      },   
+      {
+        typegooseClass: ApplicantModel,
+        schemaOptions: {
+        collection: 'Applicant',
+        },
+      }, 
+      {  
+          typegooseClass: WorkModel,
+          schemaOptions: {
+          collection: 'Work',
+          },
+        }
       ]),
   ]
 })

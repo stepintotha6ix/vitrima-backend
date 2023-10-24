@@ -6,6 +6,7 @@ import { UserModule } from './user/user.module';
 
 import { TypegooseModule } from 'nestjs-typegoose';
 import { getMongoDbConfig } from './config/mongo.config';
+import { WorkModule } from './work/work.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { getMongoDbConfig } from './config/mongo.config';
     }),
     AuthModule,
     UserModule,
+    WorkModule,
   ],
   controllers: [],
   providers: [],

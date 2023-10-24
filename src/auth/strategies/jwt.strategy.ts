@@ -10,7 +10,12 @@ import { UserModel } from 'src/user/Schemas/user.model';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy){
-    constructor(private readonly configService: ConfigService, @InjectModel(UserModel) private readonly UserModel: ModelType<UserModel> ){
+    constructor(private readonly configService: ConfigService,
+         @InjectModel(UserModel) private readonly UserModel: ModelType<UserModel>,
+     ){
+
+
+
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: true,
@@ -18,7 +23,7 @@ export class JwtStrategy extends PassportStrategy(Strategy){
         })   
     }
 
-    async validate({_id}: Pick<UserModel, '_id'>){
+    async validate({_id}: Pick<UserModel , '_id'>){
         return await this.UserModel.findById(_id).exec()
     }
 

@@ -1,13 +1,9 @@
 import { prop } from "@typegoose/typegoose"
 import { Base, TimeStamps } from "@typegoose/typegoose/lib/defaultClasses"
 
-export enum Role {
-	APPLICANT = 'applicant',
-	CONTRACTOR = 'contractor'
-}
 export interface UserModel extends Base {}
 
-export class UserModel extends TimeStamps  {
+export class UserModel extends TimeStamps {
 	@prop({unique: true})
 	email: string
 	@prop()
@@ -15,9 +11,29 @@ export class UserModel extends TimeStamps  {
 	@prop()
 	nickname: string
 	@prop()
-	inn?: string
-	@prop({default: false})
 	isAdmin: boolean
+}
+export interface ContractorModel extends Base {}
+
+
+export class ContractorModel extends UserModel{
+	
 	@prop()
-	role: Role
+	inn: string
+	@prop()
+	work: string
+	@prop()
+	subscribers: ApplicantModel[]
+
+
+}
+
+export interface ApplicantModel extends Base {}
+
+
+export class ApplicantModel extends UserModel{
+	
+	@prop()
+	subscriptions: ContractorModel[]
+
 }
