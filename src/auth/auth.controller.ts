@@ -13,6 +13,7 @@ import {
 import { AuthService } from './auth.service'
 import { AuthDto, LoginDto } from './dto/auth.dto'
 import { UpdateAuthDto } from './dto/update-auth.dto'
+import { RefreshTokenDto } from './dto/refreshToken.dto'
 
 @Controller('auth')
 export class AuthController {
@@ -31,18 +32,11 @@ export class AuthController {
 		return this.authService.login(loginDto)
 	}
 
-	@Get(':id')
-	findOne(@Param('id') id: string) {
-		return this.authService.findOne(+id)
+	@UsePipes(new ValidationPipe())
+	@HttpCode(200)
+	@Post('login/access-token')
+	async getNewTokens(@Body() tokenDto: RefreshTokenDto) {
+		return this.authService.getNewTokens(tokenDto)
 	}
-
-	@Patch(':id')
-	update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-		return this.authService.update(+id, updateAuthDto)
-	}
-
-	@Delete(':id')
-	remove(@Param('id') id: string) {
-		return this.authService.remove(+id)
-	}
+	
 }

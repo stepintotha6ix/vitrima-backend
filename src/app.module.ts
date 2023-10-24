@@ -3,15 +3,18 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
-import { MongooseModule } from '@nestjs/mongoose';
+
+import { TypegooseModule } from 'nestjs-typegoose';
+import { getMongoDbConfig } from './config/mongo.config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      envFilePath: '.env',
-      isGlobal: true,
+    ConfigModule.forRoot(),
+    TypegooseModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: getMongoDbConfig
     }),
-    MongooseModule.forRoot(process.env.MONGO_URI),
     AuthModule,
     UserModule,
   ],
