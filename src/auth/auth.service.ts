@@ -1,48 +1,53 @@
 import {
 	BadRequestException,
 	Injectable,
+	InternalServerErrorException,
 	UnauthorizedException,
 } from '@nestjs/common'
 import { AuthApplicantDto, AuthContractorDto, LoginDto } from './dto/auth.dto'
 import { hash, genSalt, compare } from 'bcryptjs'
-import { UserModel, ContractorModel, ApplicantModel  } from 'src/user/Schemas/user.model'
-import { InjectModel } from 'nestjs-typegoose'
-import mongoose from 'mongoose'
+import { Contractor, Applicant, User } from 'src/user/Schemas/user.schema'
+import mongoose, { Model } from 'mongoose'
 import { JwtService } from '@nestjs/jwt'
 import { RefreshTokenDto } from './dto/refreshToken.dto'
+import { InjectModel } from '@nestjs/mongoose'
+import { HttpService } from 'src/http/http.service'
 
 @Injectable()
 export class AuthService {
-	
 	constructor(
-		@InjectModel(UserModel)
-		private UserModel: mongoose.Model<UserModel>,
-		@InjectModel(ContractorModel)
-		private ContractorModel:mongoose.Model<ContractorModel>,
-		@InjectModel(ApplicantModel)
-		private ApplicantModel:mongoose.Model<ApplicantModel>,
-		
+		@InjectModel(User.name)
+		private UserSchema: mongoose.Model<User>,
+		@InjectModel('Applicant') private readonly applicantModel: Model<Applicant>,
+		@InjectModel('Contractor')
+		private readonly contractorModel: Model<Contractor>,
+		private readonly httpService: HttpService,
+
 		private readonly jwtService: JwtService
 	) {}
 
 	async registerContractor(authDto: AuthContractorDto) {
-		const oldUser = await this.ContractorModel.findOne({ email: authDto.email })
-		if (oldUser)
+		const oldUser = await this.contractorModel.findOne({
+			email: authDto.email,
+		})
+
+		if (oldUser) {
 			throw new BadRequestException(
 				'User with this email is already in the system'
 			)
+		}
 
 		const salt = await genSalt(10)
+		const hashedPassword = await hash(authDto.password, salt)
 
-		const newUser = new this.ContractorModel({
+		const newUser = new this.contractorModel({
 			email: authDto.email,
-			password: await hash(authDto.password, salt),
+			password: hashedPassword,
 			nickname: authDto.nickname,
 			inn: authDto.inn,
 		})
 
 		const user = await newUser.save()
-
 		const tokens = await this.issueTokenPair(String(user._id))
 
 		return {
@@ -52,7 +57,7 @@ export class AuthService {
 	}
 
 	async registerApplicant(authDto: AuthApplicantDto) {
-		const oldUser = await this.ApplicantModel.findOne({ email: authDto.email })
+		const oldUser = await this.applicantModel.findOne({ email: authDto.email })
 		if (oldUser)
 			throw new BadRequestException(
 				'User with this email is already in the system'
@@ -60,7 +65,7 @@ export class AuthService {
 
 		const salt = await genSalt(10)
 
-		const newUser = new this.ApplicantModel({
+		const newUser = new this.applicantModel({
 			email: authDto.email,
 			password: await hash(authDto.password, salt),
 			nickname: authDto.nickname,
@@ -77,22 +82,26 @@ export class AuthService {
 	}
 
 	async getNewTokens({ refreshToken }: RefreshTokenDto) {
-		if (!refreshToken)
+		if (!refreshToken) {
 			throw new UnauthorizedException('Пожалуйста, войдите снова')
+		}
 
 		const result = await this.jwtService.verifyAsync(refreshToken)
-		if (!result)
+		if (!result) {
 			throw new UnauthorizedException('Токен невалиден или закончился')
+		}
 
-			//			const user = await this.UserModel.findById(result._id)
+		const applicant = await this.applicantModel.findById(result._id).exec()
+		const contractor = await this.contractorModel.findById(result._id).exec()
 
-		const applicator = await this.ApplicantModel.findById(result._id)
-		const contractor = await this.ContractorModel.findById(result._id)
-		
-		const tokens = await this.issueTokenPair(result._id.toString())
+		if (!applicant && !contractor) {
+			throw new UnauthorizedException('Пользователь не найден')
+		}
+
+		const tokens = await this.issueTokenPair(String(applicant ? applicant._id : contractor._id))
 
 		return {
-			user: this.returnUserFields(applicator || contractor),
+			user: this.returnUserFields(applicant || contractor),
 			...tokens,
 		}
 	}
@@ -100,13 +109,23 @@ export class AuthService {
 	async login(loginDto: LoginDto) {
 		const user = await this.validateUser(loginDto)
 		const tokens = await this.issueTokenPair(String(user._id))
-
+	
 		return { user: this.returnUserFields(user), ...tokens }
 	}
 
 	async validateUser(loginDto: LoginDto) {
-		const user = await this.UserModel.findOne({ email: loginDto.email })
-		if (!user) throw new UnauthorizedException('Пользователь не найден')
+		const contractorUser = await this.contractorModel.findOne({
+			email: loginDto.email,
+		})
+		const applicantUser = await this.applicantModel.findOne({
+			email: loginDto.email,
+		})
+
+		if (!contractorUser && !applicantUser) {
+			throw new UnauthorizedException('Пользователь не найден')
+		}
+
+		const user = contractorUser || applicantUser
 
 		const isValidPassword = await compare(loginDto.password, user.password)
 		if (!isValidPassword) throw new UnauthorizedException('Неверный пароль')
@@ -119,15 +138,17 @@ export class AuthService {
 
 		const refreshToken = await this.jwtService.signAsync(data, {
 			expiresIn: '30d',
+			secret: process.env.JWT_SECRET
 		})
 		const accessToken = await this.jwtService.signAsync(data, {
 			expiresIn: '30m',
+			secret: process.env.JWT_SECRET
 		})
 
 		return { refreshToken, accessToken }
 	}
 
-	returnUserFields(user: UserModel) {
+	returnUserFields(user: User) {
 		return {
 			_id: user._id,
 			email: user.email,

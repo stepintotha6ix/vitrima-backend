@@ -11,7 +11,7 @@ import { UserService } from './user.service'
 import { CreateUserDto } from './dto/create-user.dto'
 import { UpdateUserDto } from './dto/update-user.dto'
 import { Auth } from 'src/auth/decorators/auth.decorator'
-import { User } from './decorators/user.decorator'
+import { UserDec } from './decorators/user.decorator'
 
 @Controller('users')
 export class UserController {
@@ -19,7 +19,7 @@ export class UserController {
 
 	@Get('profile')
   @Auth()
-	async GetProfile(@User('_id') _id:string) {
+	async GetProfile(@UserDec('_id') _id:string) {
 		return this.userService.ById(_id)
 	}
 

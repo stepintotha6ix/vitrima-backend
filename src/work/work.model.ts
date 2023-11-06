@@ -1,20 +1,17 @@
-import { prop } from "@typegoose/typegoose"
-
-import { Base, TimeStamps } from "@typegoose/typegoose/lib/defaultClasses";
-
-export interface UserModel extends Base {}
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 
 
-
-export class WorkModel extends TimeStamps {
-  @prop()
+@Schema()
+export class Work {
+  @Prop()
   title: string
-  @prop()
+  @Prop()
   description: string
-  @prop()
+  @Prop()
   images: string
-  @prop()
+  @Prop()
   tags: string[]
 }
+export const WorkSchema = SchemaFactory.createForClass(Work);
 
 

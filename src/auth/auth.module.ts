@@ -4,47 +4,45 @@ import { AuthController } from './auth.controller'
 
 import { ConfigModule, ConfigService } from '@nestjs/config'
 
-import { JwtModule } from '@nestjs/jwt'
+import { JwtModule, JwtService } from '@nestjs/jwt'
 import { getJwtDbConfig } from 'src/config/jwt.config'
-import { TypegooseModule } from 'nestjs-typegoose'
 import {
-	ApplicantModel,
-	ContractorModel,
-	UserModel,
-} from 'src/user/Schemas/user.model'
+	ApplicantSchema,
+	ContractorSchema,
+	UserSchema,
+} from 'src/user/Schemas/user.schema'
 import { JwtStrategy } from './strategies/jwt.strategy'
+import { MongooseModule } from '@nestjs/mongoose'
+import { HttpService } from 'src/http/http.service'
 
 @Module({
 	controllers: [AuthController],
 	imports: [
-		TypegooseModule.forFeature([
+		MongooseModule.forFeature([
 			{
-				typegooseClass: ContractorModel,
-				schemaOptions: {
-					collection: 'Contractor',
-				},
+				schema: ContractorSchema,
+				name: 'Contractor',
 			},
 			{
-				typegooseClass: ApplicantModel,
-				schemaOptions: {
-					collection: 'Applicant',
-				},
+				schema: ApplicantSchema,
+				name: 'Applicant',
 			},
-
 			{
-				typegooseClass: UserModel,
-				schemaOptions: {
-					collection: 'User',
-				},
+				schema: UserSchema,
+				name: 'User',
 			},
 		]),
 		ConfigModule,
 		JwtModule.registerAsync({
 			imports: [ConfigModule],
-			inject: [ConfigService],
-			useFactory: getJwtDbConfig,
+			useFactory: async () => ({
+			  secret: process.env.JWT_SECRET,
+			  
+			}),
 		}),
+		
 	],
-	providers: [AuthService, JwtStrategy],
+	exports: [JwtStrategy],
+	providers: [AuthService, JwtStrategy, JwtService, HttpService],
 })
 export class AuthModule {}
