@@ -1,1 +1,3 @@
-export class CreateWorkDto {}
+export class CreateWorkDto {
+    
+}

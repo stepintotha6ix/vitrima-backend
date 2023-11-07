@@ -37,22 +37,32 @@ export class AuthService {
 			)
 		}
 
-		const salt = await genSalt(10)
-		const hashedPassword = await hash(authDto.password, salt)
+		const isValidInn = await this.httpService.validateInn(authDto.inn)
 
-		const newUser = new this.contractorModel({
-			email: authDto.email,
-			password: hashedPassword,
-			nickname: authDto.nickname,
-			inn: authDto.inn,
-		})
+		if (isValidInn.data.suggestions.length === 0) {
+			throw new BadRequestException(
+				'Некоректный инн, введите другой'
+			)
+			
+		} else {
+			console.log(isValidInn)
+			const salt = await genSalt(10)
+			const hashedPassword = await hash(authDto.password, salt)
 
-		const user = await newUser.save()
-		const tokens = await this.issueTokenPair(String(user._id))
+			const newUser = new this.contractorModel({
+				email: authDto.email,
+				password: hashedPassword,
+				nickname: authDto.nickname,
+				inn: authDto.inn,
+			})
 
-		return {
-			user: this.returnUserFields(user),
-			...tokens,
+			const user = await newUser.save()
+			const tokens = await this.issueTokenPair(String(user._id))
+
+			return {
+				user: this.returnUserFields(user),
+				...tokens,
+			}
 		}
 	}
 
@@ -98,7 +108,9 @@ export class AuthService {
 			throw new UnauthorizedException('Пользователь не найден')
 		}
 
-		const tokens = await this.issueTokenPair(String(applicant ? applicant._id : contractor._id))
+		const tokens = await this.issueTokenPair(
+			String(applicant ? applicant._id : contractor._id)
+		)
 
 		return {
 			user: this.returnUserFields(applicant || contractor),
@@ -109,7 +121,7 @@ export class AuthService {
 	async login(loginDto: LoginDto) {
 		const user = await this.validateUser(loginDto)
 		const tokens = await this.issueTokenPair(String(user._id))
-	
+
 		return { user: this.returnUserFields(user), ...tokens }
 	}
 
@@ -138,11 +150,11 @@ export class AuthService {
 
 		const refreshToken = await this.jwtService.signAsync(data, {
 			expiresIn: '30d',
-			secret: process.env.JWT_SECRET
+			secret: process.env.JWT_SECRET,
 		})
 		const accessToken = await this.jwtService.signAsync(data, {
 			expiresIn: '30m',
-			secret: process.env.JWT_SECRET
+			secret: process.env.JWT_SECRET,
 		})
 
 		return { refreshToken, accessToken }

@@ -1,35 +1,25 @@
+import { UnauthorizedException } from '@nestjs/common'
 import axios, { AxiosError } from 'axios'
+
+const token = '4a9e155a8d8b3989ac9f4a5e58269c44c65f049b'
+const url =
+	'https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/party'
+
+const headers = {
+	'Content-Type': 'application/json',
+	Accept: 'application/json',
+	Authorization: 'Token ' + token,
+}
 
 export class HttpService {
 	// Асинхронный метод для валидации ИНН
-	async validateInn(
-		inn: string
-	): Promise<{ success: boolean; errorMessage?: string }> {
-		try {
-			const response = await axios.get(
-				`https://api-fns.ru/api/egr?req=${inn}&key=4874d4ea1b892429e9f909aaa3025d294a1ca8b7`
-			)
-				console.log(response.data.items)
-			if (response.data.items === 0) {
-				return {
-					success: false,
-					errorMessage: 'Неверный формат данных от API ФНС',
-				}
-			} else {
-				return { success: true }
-			}
-		} catch (error) {
-			console.error('Ошибка при запросе к API ФНС:', error)
-
-			if (axios.isAxiosError(error)) {
-				const axiosError = error as AxiosError
-				return { success: false, errorMessage: axiosError.message }
-			} else {
-				return {
-					success: false,
-					errorMessage: 'Произошла ошибка при запросе к API ФНС',
-				}
-			}
+	async validateInn(inn: string) {
+		const response = await axios.post(url, { query: inn }, { headers: headers })
+		console.log(response.data)
+		if (response.data === null ||response.data === undefined) {
+			throw new UnauthorizedException('Данный инн не найден')
 		}
+		return response
+		
 	}
 }

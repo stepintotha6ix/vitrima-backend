@@ -1,5 +1,5 @@
 import { MongooseModule } from '@nestjs/mongoose'
-import { WorkSchema } from '../work/work.model'
+import { WorkSchema } from '../work/work.schema'
 import { Module } from '@nestjs/common'
 import { UserService } from './user.service'
 import { UserController } from './user.controller'
