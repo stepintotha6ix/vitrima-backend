@@ -27,10 +27,7 @@ import { HttpService } from 'src/http/http.service'
 				schema: ApplicantSchema,
 				name: 'Applicant',
 			},
-			{
-				schema: UserSchema,
-				name: 'User',
-			},
+
 		]),
 		ConfigModule,
 		JwtModule.registerAsync({

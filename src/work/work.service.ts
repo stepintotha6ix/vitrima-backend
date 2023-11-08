@@ -3,22 +3,32 @@ import { CreateWorkDto } from './dto/create-work.dto'
 import { UpdateWorkDto } from './dto/update-work.dto'
 import { Work } from './work.schema'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
+import mongoose, { Model } from 'mongoose'
+
+import { UserService } from 'src/user/user.service'
+import { User } from 'src/user/Schemas/user.schema'
 
 @Injectable()
 export class WorkService {
-	constructor(@InjectModel('Work') private readonly workModel: Model<Work>) {}
-	
-  async createWork(workDto: CreateWorkDto) {
+	constructor(
+		@InjectModel('Work') private readonly workModel: Model<Work>,
+		
+		 ) {}
+
+	async createWork(workDto: CreateWorkDto) {
+		
+
 		const newWork = new this.workModel({
-    //   price: workDto
-    //   category:
-    //   title:
-    //   description:
-    //   images:
-    //   tags:
-    })
-		return 'This action adds a new job'
+			price: workDto.price,
+			category: workDto.category,
+			title: workDto.title,
+			description: workDto.description,
+			images: workDto.images,
+			tags: workDto.tags,
+		})
+
+		const work = await newWork.save()
+		return work
 	}
 
 	findAll() {

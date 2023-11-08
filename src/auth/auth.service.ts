@@ -16,8 +16,7 @@ import { HttpService } from 'src/http/http.service'
 @Injectable()
 export class AuthService {
 	constructor(
-		@InjectModel(User.name)
-		private UserSchema: mongoose.Model<User>,
+		
 		@InjectModel('Applicant') private readonly applicantModel: Model<Applicant>,
 		@InjectModel('Contractor')
 		private readonly contractorModel: Model<Contractor>,

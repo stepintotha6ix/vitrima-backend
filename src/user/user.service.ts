@@ -1,20 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User, UserSchema } from './Schemas/user.schema';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+
 
 @Injectable()
 export class UserService {
   
-constructor(@InjectModel('User') private readonly UserSchema){}
-
-  async ById(_id: string) {
-    const user = await this.UserSchema.findById(_id)
-    if(!user) throw new NotFoundException('Пользователь не найден')
-    
-    return user
+ async ById(_id: string) {
+  
   }
 
   findAll() {

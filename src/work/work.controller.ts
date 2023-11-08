@@ -7,7 +7,7 @@ import { UpdateWorkDto } from './dto/update-work.dto';
 export class WorkController {
   constructor(private readonly workService:  WorkService) {}
 
-  @Post()
+  @Post('create')
   create(@Body() createJobDto: CreateWorkDto) {
     return this.workService.createWork(createJobDto);
   }
