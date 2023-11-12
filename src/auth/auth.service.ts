@@ -53,6 +53,7 @@ export class AuthService {
 				password: hashedPassword,
 				nickname: authDto.nickname,
 				inn: authDto.inn,
+				
 			})
 
 			const user = await newUser.save()
@@ -78,6 +79,7 @@ export class AuthService {
 			email: authDto.email,
 			password: await hash(authDto.password, salt),
 			nickname: authDto.nickname,
+	
 		})
 
 		const user = await newUser.save()
@@ -164,8 +166,8 @@ export class AuthService {
 			_id: user._id,
 			email: user.email,
 			nickname: user.nickname,
-
-			isAdmin: user.isAdmin,
+			isContractor: user.isContractor,
+			isAdmin: user.isAdmin
 		}
 	}
 }

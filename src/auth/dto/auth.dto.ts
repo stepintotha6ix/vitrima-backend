@@ -1,4 +1,4 @@
-import { IsEmail, IsString, MinLength } from 'class-validator'
+import { IsBoolean, IsEmail, IsString, MinLength } from 'class-validator'
 
 export class AuthContractorDto {
 	@IsEmail()
@@ -12,6 +12,7 @@ export class AuthContractorDto {
 
 	@IsString()
 	nickname: string
+	
 
 	@IsString()
 	inn: string
@@ -30,6 +31,7 @@ export class AuthApplicantDto {
 	@IsString()
 	nickname: string
 
+	
 }
 
 export class LoginDto {
@@ -42,4 +44,5 @@ export class LoginDto {
 	@IsString()
 	password: string
 
+	
 }

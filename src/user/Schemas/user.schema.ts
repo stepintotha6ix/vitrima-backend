@@ -9,10 +9,14 @@ export class User {
 	password: string
 	@Prop()
 	nickname: string
-	
+	@Prop({default: false})
+	isAdmin: boolean
+	@Prop()
+	isContractor: boolean
+
 	_id: mongoose.Types.ObjectId
 	
-	isAdmin: boolean
+	
 }
 export const UserSchema = SchemaFactory.createForClass(User)
 
@@ -24,6 +28,9 @@ export class Contractor extends User {
 	work: string
 	@Prop()
 	subscribers: Applicant[]
+	@Prop({ default: true })
+	isContractor: boolean
+
 }
 export const ContractorSchema = SchemaFactory.createForClass(Contractor)
 
@@ -31,5 +38,8 @@ export const ContractorSchema = SchemaFactory.createForClass(Contractor)
 export class Applicant extends User {
 	@Prop()
 	subscriptions: Contractor[]
+	@Prop({ default: false })
+	isContractor: boolean
+
 }
 export const ApplicantSchema = SchemaFactory.createForClass(Applicant)

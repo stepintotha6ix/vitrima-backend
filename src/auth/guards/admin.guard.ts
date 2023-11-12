@@ -3,7 +3,7 @@ import { Reflector } from "@nestjs/core";
 import { Observable } from "rxjs";
 import { User } from "src/user/Schemas/user.schema";
 
-export class OnlyAdminGuard implements CanActivate{
+export class OnlyAdminGuard  implements CanActivate{
     constructor(private reflector:Reflector){}
 
     canActivate(context: ExecutionContext): boolean  {
