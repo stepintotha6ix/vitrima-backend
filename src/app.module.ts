@@ -19,6 +19,7 @@ import { ApplicantSchema, ContractorSchema, UserSchema } from './user/Schemas/us
 import { HttpService } from './http/http.service'
 import { JwtService } from '@nestjs/jwt'
 import { FileModule } from './file/file.module';
+import { TagModule } from './tag/tag.module';
 
 @Module({
 	imports: [
@@ -48,6 +49,7 @@ import { FileModule } from './file/file.module';
 		WorkModule,
 		HttpModule,
 		FileModule,
+		TagModule,
 	],
 	controllers: [],
 	providers: [AuthService, HttpService, JwtService],

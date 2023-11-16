@@ -1,3 +1,4 @@
+import { TagSchema } from './../tag/tag.schema';
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import mongoose from "mongoose"
 
@@ -19,12 +20,15 @@ export class Work {
   title: string
   @Prop()
   description: string
-  @Prop()
-  userId: string
-  @Prop()
-  images: string
-  @Prop()
-  tags: string[]
+  @Prop({unique: true})
+  slug: string
+    @Prop()
+  images: string[]
+  @Prop({ type: String, ref: 'Tag' })
+	tags: string[]
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Contractor' })
+  contractorId: mongoose.Types.ObjectId;
+
 }
 export const WorkSchema = SchemaFactory.createForClass(Work);
 

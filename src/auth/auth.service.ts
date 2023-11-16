@@ -70,7 +70,7 @@ export class AuthService {
 		const oldUser = await this.applicantModel.findOne({ email: authDto.email })
 		if (oldUser)
 			throw new BadRequestException(
-				'User with this email is already in the system'
+				'Данная почта уже используется'
 			)
 
 		const salt = await genSalt(10)

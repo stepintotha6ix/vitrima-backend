@@ -18,14 +18,31 @@ export class UserController {
 	constructor(private readonly userService: UserService) {}
 
 	@Get('profile')
-  @Auth()
-	async GetProfile(@UserDec('_id') _id:string) {
-		return this.userService.ById(_id)
+	@Auth()
+	async GetProfile(@UserDec('_id') _id: string) {
+		return this.userService.contractorById(_id)
+	}
+
+	@Get(`:id/works`)
+	getContractorWorks(@Param('_id') id: string) {
+		return this.userService.getContractorWorks(id)
 	}
 
 	@Get()
 	findAll() {
 		return this.userService.findAll()
+	}
+
+	
+
+	@Get('count/contractors')
+	async getCountContractors() {
+		return this.userService.getCountContractors()
+	}
+
+	@Get('count/applicants')
+	async getCountApplicants() {
+		return this.userService.getCountApplicants()
 	}
 
 	@Patch(':id')
