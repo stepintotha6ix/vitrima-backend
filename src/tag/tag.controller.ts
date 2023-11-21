@@ -10,6 +10,7 @@ import {
   UsePipes,
   Put,
   ValidationPipe,
+  Query,
 } from '@nestjs/common'
 import { TagService } from './tag.service'
 import { CreateTagDto } from './dto/create-tag.dto'
@@ -35,8 +36,8 @@ export class TagController {
 	}
 
 	@Get()
-	findAll() {
-		return this.tagService.findAll()
+	async getAll(@Query('searchTerm') searchTerm?: string) {
+		return this.tagService.getAll(searchTerm)
 	}
 
 	@Get(':id')

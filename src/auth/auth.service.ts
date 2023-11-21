@@ -79,7 +79,7 @@ export class AuthService {
 			email: authDto.email,
 			password: await hash(authDto.password, salt),
 			nickname: authDto.nickname,
-	
+			
 		})
 
 		const user = await newUser.save()

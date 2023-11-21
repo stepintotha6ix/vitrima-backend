@@ -48,17 +48,17 @@ export class TagService {
 	}
 
   async getCollections() {
-		const genres = await this.getAll()
+		const tags = await this.getAll()
 		const collections = await Promise.all(
-			genres.map(async (genre) => {
-				const moviesByGenre = await this.workService.byGenres([genre._id])
+			tags.map(async (tag) => {
+				const workByTag = await this.workService.byTags([tag._id])
 
-				if (moviesByGenre.length == 0) return null
+				if (workByTag.length == 0) return null
 
 				const result: ICollection = {
-					_id: String(genre._id),
-					title: genre.title,
-					slug: genre.slug,
+					_id: String(tag._id),
+					title: tag.title,
+					slug: tag.slug,
 				}
 
 				return result

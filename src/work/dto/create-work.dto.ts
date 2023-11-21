@@ -1,4 +1,4 @@
-import { IsNumber, IsString, isString } from 'class-validator'
+import { IsArray, IsNumber, IsString, isString } from 'class-validator'
 
 export class CreateWorkDto {
 	@IsNumber()
@@ -11,7 +11,8 @@ export class CreateWorkDto {
 	description: string
 	@IsString()
 	images: string[]
-	@IsString()
+	@IsArray()
+	@IsString({each: true})
 	tags: string[]
 	@IsString()
 	slug: string

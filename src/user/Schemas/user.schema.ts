@@ -16,6 +16,10 @@ export class User {
 	isContractor: boolean
 
 	_id: mongoose.Types.ObjectId
+
+	@Prop({ type: Date, default: Date.now })
+    createdAt: Date;
+
 }
 export const UserSchema = SchemaFactory.createForClass(User)
 
