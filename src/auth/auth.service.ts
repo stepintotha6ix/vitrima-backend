@@ -12,16 +12,17 @@ import { JwtService } from '@nestjs/jwt'
 import { RefreshTokenDto } from './dto/refreshToken.dto'
 import { InjectModel } from '@nestjs/mongoose'
 import { HttpService } from 'src/http/http.service'
+import { ConfigService } from '@nestjs/config'
 
 @Injectable()
 export class AuthService {
 	constructor(
-		
+		configService: ConfigService,
 		@InjectModel('Applicant') private readonly applicantModel: Model<Applicant>,
 		@InjectModel('Contractor')
 		private readonly contractorModel: Model<Contractor>,
 		private readonly httpService: HttpService,
-
+	
 		private readonly jwtService: JwtService
 	) {}
 
@@ -44,7 +45,7 @@ export class AuthService {
 			)
 			
 		} else {
-			console.log(isValidInn)
+			
 			const salt = await genSalt(10)
 			const hashedPassword = await hash(authDto.password, salt)
 
@@ -80,6 +81,7 @@ export class AuthService {
 			password: await hash(authDto.password, salt),
 			nickname: authDto.nickname,
 			
+			
 		})
 
 		const user = await newUser.save()
@@ -97,22 +99,22 @@ export class AuthService {
 			throw new UnauthorizedException('Пожалуйста, войдите снова')
 		}
 
-		const result = await this.jwtService.verifyAsync(refreshToken)
+		const result = await this.jwtService.verifyAsync(refreshToken, 
+			{secret: process.env.JWT_SECRET})
 		if (!result) {
 			throw new UnauthorizedException('Токен невалиден или закончился')
 		}
 
-		const applicant = await this.applicantModel.findById(result._id).exec()
-		const contractor = await this.contractorModel.findById(result._id).exec()
+		const applicant = await this.applicantModel.findById(result._id)
+		const contractor = await this.contractorModel.findById(result._id)
 
 		if (!applicant && !contractor) {
 			throw new UnauthorizedException('Пользователь не найден')
 		}
-
-		const tokens = await this.issueTokenPair(
-			String(applicant ? applicant._id : contractor._id)
-		)
-
+		const user = applicant || contractor;
+		const userId = String(user._id);
+		const tokens = await this.issueTokenPair(userId);
+	
 		return {
 			user: this.returnUserFields(applicant || contractor),
 			...tokens,

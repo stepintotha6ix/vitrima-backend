@@ -19,11 +19,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 		@InjectModel(Applicant.name) private readonly applicantModel,
 		@InjectModel(Contractor.name) private readonly contractorModel
 	) {
+
+	
 		super({
 			
 			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: true,
-            secretOrKey: configService.get('JWT_SECRET')
+            secretOrKey: configService.get('JWT_SECRET'),
 		})
 	}
 

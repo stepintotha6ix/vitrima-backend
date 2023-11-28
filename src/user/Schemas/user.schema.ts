@@ -18,8 +18,12 @@ export class User {
 	_id: mongoose.Types.ObjectId
 
 	@Prop({ type: Date, default: Date.now })
-    createdAt: Date;
+    createdAt: Date
 
+	@Prop({type: String})
+	image: string
+
+	
 }
 export const UserSchema = SchemaFactory.createForClass(User)
 
@@ -33,6 +37,8 @@ export class Contractor extends User {
 	subscribers: Applicant[]
 	@Prop({ default: true })
 	isContractor: boolean
+	@Prop()
+	description: string
 }
 export const ContractorSchema = SchemaFactory.createForClass(Contractor)
 
@@ -42,5 +48,8 @@ export class Applicant extends User {
 	subscriptions: Contractor[]
 	@Prop({ default: false })
 	isContractor: boolean
+	@Prop()
+	overview : string
+
 }
 export const ApplicantSchema = SchemaFactory.createForClass(Applicant)

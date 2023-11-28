@@ -20,6 +20,7 @@ import { HttpService } from './http/http.service'
 import { JwtService } from '@nestjs/jwt'
 import { FileModule } from './file/file.module';
 import { TagModule } from './tag/tag.module';
+import { ServicePriceModule } from './service-price/service-price.module';
 
 @Module({
 	imports: [
@@ -50,6 +51,7 @@ import { TagModule } from './tag/tag.module';
 		HttpModule,
 		FileModule,
 		TagModule,
+		ServicePriceModule,
 	],
 	controllers: [],
 	providers: [AuthService, HttpService, JwtService],

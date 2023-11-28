@@ -8,6 +8,10 @@ import {
 	Delete,
 	Query,
 	HttpCode,
+	Put,
+	UsePipes,
+	ValidationPipe,
+	Req,
 } from '@nestjs/common'
 import { UserService } from './user.service'
 import { CreateUserDto } from './dto/create-user.dto'
@@ -15,6 +19,7 @@ import { UpdateUserDto } from './dto/update-user.dto'
 import { Auth } from 'src/auth/decorators/auth.decorator'
 import { UserDec } from './decorators/user.decorator'
 import { IdValidationPipe } from 'src/pipes/id.validation.pipe'
+import { User } from './Schemas/user.schema'
 
 @Controller('users')
 export class UserController {
@@ -53,6 +58,11 @@ export class UserController {
 	async getApplicant(@Param('id', IdValidationPipe) id: string) {
 		return this.userService.applicantById(id)
 	}
+	@Get('/:id')
+	
+	async getUserById(@Param('id', IdValidationPipe) id: string) {
+		return this.userService.getUserById(id)
+	}
 
 	@Get('count/contractors')
 	async getCountContractors() {
@@ -64,10 +74,33 @@ export class UserController {
 		return this.userService.getCountApplicants()
 	}
 
-	@Patch(':id')
-	update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-		return this.userService.updateProfile(id, updateUserDto)
+	
+	@Get('profile/takeinfouser')
+	@Auth()
+	async getProfile(@UserDec('_id') _id: string) {
+		
+		return this.userService.getUserById(_id)
 	}
+
+	@UsePipes(new ValidationPipe())
+	@Put('profile')
+	@HttpCode(200)
+	@Auth()
+	async updateProfile(@UserDec('_id') _id: string, @Body() dto: UpdateUserDto) {
+		return this.userService.updateProfile(_id, dto)
+	}
+
+	@UsePipes(new ValidationPipe())
+	@Put(':id')
+	@HttpCode(200)
+	@Auth('admin')
+	async updateUser(
+		@Param('id', IdValidationPipe) id: string,
+		@Body() dto: UpdateUserDto
+	) {
+		return this.userService.updateProfile(id, dto)
+	}
+
 
 	@Delete(':id')
 	@HttpCode(200)

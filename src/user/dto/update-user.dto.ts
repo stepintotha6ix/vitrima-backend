@@ -6,8 +6,12 @@ export class UpdateUserDto {
 
 	password?: string
 
-	isAdmin?: boolean
-
     nickname: string
+
+	overview?: string
     
+	isAdmin?: boolean
+	
+	image?: string
+
 }
