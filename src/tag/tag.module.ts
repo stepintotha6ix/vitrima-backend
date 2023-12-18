@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TagService } from './tag.service';
 import { TagController } from './tag.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { WorkSchema } from 'src/work/work.schema';
+import { SubTypeSchema, WorkSchema, WorkTypeSchema } from 'src/work/work.schema';
 import { WorkService } from 'src/work/work.service';
 import { TagSchema } from './tag.schema';
 import { UserService } from 'src/user/user.service';
@@ -13,6 +13,14 @@ import { ApplicantSchema, ContractorSchema } from 'src/user/Schemas/user.schema'
   providers: [TagService, WorkService, UserService],
   imports: [
     MongooseModule.forFeature([
+      {
+				schema: WorkTypeSchema,
+				name: 'WorkType',
+			},{
+				schema: SubTypeSchema,
+				name: 'SubType',
+			},
+			
       {
         schema: WorkSchema,
         name:'Work'

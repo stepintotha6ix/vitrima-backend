@@ -73,9 +73,9 @@ export class TagService {
   }
 
   async byId(_id: string) {
-		const genre = await this.tagModel.findById(_id)
-		if (!genre) throw new NotFoundException('Genre not found')
-		return genre
+		const tag = await this.tagModel.findById(_id)
+		if (!tag) throw new NotFoundException('Тег не найден')
+		return tag
 	}
 
   async bySlug(slug: string) {

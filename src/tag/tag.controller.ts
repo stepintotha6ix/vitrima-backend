@@ -41,7 +41,7 @@ export class TagController {
 	}
 
 	@Get(':id')
-	@Auth('admin')
+	@Auth()
 	async get(@Param('id', IdValidationPipe) id: string) {
 		return this.tagService.byId(id)
 	}
