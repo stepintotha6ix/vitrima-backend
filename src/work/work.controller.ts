@@ -3,11 +3,8 @@ import {
 	Get,
 	Post,
 	Body,
-	Patch,
 	Param,
 	Delete,
-	UseGuards,
-	Req,
 	Query,
 	Put,
 	HttpCode,
@@ -16,16 +13,16 @@ import {
 } from '@nestjs/common'
 
 import {
+	CreateBuildingTechniqueDto,
 	CreateSubTypeDto,
 	CreateWorkDto,
 	CreateWorkTypeDto,
+	
 } from './dto/create-work.dto'
-import { UpdateWorkDto, UpdateWorkTypeDto } from './dto/update-work.dto'
-import { AuthCheckContractor } from 'src/auth/guards/authCheck.guard'
+import { UpdateWorkDto } from './dto/update-work.dto'
 import { IdValidationPipe } from 'src/pipes/id.validation.pipe'
 import { Auth } from 'src/auth/decorators/auth.decorator'
 import { WorkService } from './work.service'
-import { getWorkFilterDto } from './dto/get-work-filte.dto'
 
 @Controller('work')
 export class WorkController {
@@ -34,6 +31,14 @@ export class WorkController {
 	@Post('create-sub-type')
 	createSubType(@Body() workDto: CreateSubTypeDto) {
 		return this.workService.createSubType(workDto)
+	}
+	@Post('create-building-technique')
+	createBuildingTechnique(@Body() workDto: CreateBuildingTechniqueDto) {
+		return this.workService.createBuildingTechnique(workDto)
+	}
+		@Get('building-technique')
+	async getAllBuildingTechnique(@Query('searchTerm') searchTerm?: string) {
+		return this.workService.getAllBuildingTechniques(searchTerm)
 	}
 
 	@Get(`by-work-type/:workTypeId`)
@@ -61,7 +66,7 @@ export class WorkController {
 	@Auth()
 	async updateWorkType(
 		@Param('id', IdValidationPipe) id: string,
-		@Body() dto: UpdateWorkTypeDto
+		@Body() dto: UpdateWorkDto
 	) {
 		return this.workService.updateWorkType(id, dto)
 	}
@@ -76,21 +81,38 @@ export class WorkController {
 	}
 
 	@Get('get-work-by-work-type/:slug')
-	getWorks(
+	async getWorks(
 		@Query('search') search: string,
 		@Query('subTypes') subTypes: any,
 		@Query('minPrice') minPrice: number,
 		@Query('maxPrice') maxPrice: number,
-		@Param('slug') slug: string
+		@Query('contractorType') contractorType: any,
+		@Query('location') location: any,
+		@Param('slug') slug: string,
+		@Query('_page') page: number,
+		@Query('_limit') limit: number,
+		@Query('buildingTechnique') buildingTechnique: string
 	): Promise<any[]> {
-		const filterDto = { search, subTypes, minPrice, maxPrice }
-
-		if (Object.values(filterDto).some(Boolean)) {
-			return this.workService.getWorksWithFilters(slug, filterDto)
-		} else {
-			return this.workService.workByWorkType(slug)
+		const filterDto = {
+			search,
+			subTypes,
+			minPrice,
+			maxPrice,
+			contractorType,
+			location,
+			buildingTechnique
 		}
+
+		const filteredWorks = await this.workService.getWorksWithFilters(
+			slug,
+			filterDto,
+			page,
+			limit
+		)
+
+		return filteredWorks
 	}
+
 	@Get('get-similar-works')
 	async getSimilarWorks(@Query('subTypes') subTypes: any) {
 		return this.workService.bySimilarSubType(subTypes)
@@ -100,6 +122,15 @@ export class WorkController {
 	async get(@Param('id', IdValidationPipe) id: string) {
 		return this.workService.byId(id)
 	}
+
+	@Get(`search/:slug`)
+	async getWorksBySearch(@Query('searchTerm') searchTerm?: string) {
+		
+		const allWorks = await this.workService.getAll(searchTerm);
+		const firstFiveWorks = allWorks.slice(0, 5);
+		return firstFiveWorks;
+	}
+
 
 	@Get(':slug')
 	findBySlug(@Param('slug') slug: string) {
@@ -116,7 +147,7 @@ export class WorkController {
 	) {
 		return this.workService.update(id, dto)
 	}
-
+	@UsePipes(new ValidationPipe())
 	@Delete(':id')
 	@HttpCode(200)
 	@Auth()

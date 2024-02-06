@@ -5,17 +5,21 @@ export class CreateWorkDto {
 	@IsNumber()
 	price: number
 
+	
 	@IsString()
 	workType: string
-	@IsString()
+	
+	@IsArray()
+
 	subTypes: string[]
 
+	buildingTechnique?: string
 
 	@IsString()
 	title: string
 	@IsString()
 	description: string
-	@IsString()
+	@IsArray()
 	images: string[]
 	@IsArray()
 	@IsString({ each: true })
@@ -27,7 +31,20 @@ export class CreateWorkDto {
 	contractorId: string
 
 
+
 }
+
+export class CreateBuildingTechniqueDto{
+	@IsString()
+	title: string
+	@IsString()
+	description: string
+	@IsString()
+  workTypeId: mongoose.Types.ObjectId;
+
+}
+
+
 
 export class CreateWorkTypeDto {
 	@IsString()

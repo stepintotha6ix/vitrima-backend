@@ -2,6 +2,21 @@ import { TagSchema } from './../tag/tag.schema'
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import mongoose from 'mongoose'
 
+
+@Schema()
+export class BuildingTechnique {
+	@Prop()
+	title: string
+	_id: mongoose.Types.ObjectId
+	@Prop()
+	description: string
+	@Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'WorkType' })
+	workTypeId: mongoose.Types.ObjectId;
+	@Prop()
+	image: string
+
+}
+
 @Schema()
 export class SubType {
 	@Prop({ required: true })
@@ -52,7 +67,10 @@ export class Work {
 	workType: string[]
 	@Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'SubType' }] })
   subTypes: SubType[];
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'BuildingTechnique' }] })
+  buildingTechnique : BuildingTechnique[];
 }
 export const WorkTypeSchema = SchemaFactory.createForClass(WorkType)
 export const SubTypeSchema = SchemaFactory.createForClass(SubType)
 export const WorkSchema = SchemaFactory.createForClass(Work)
+export const BuildingTechniqueSchema = SchemaFactory.createForClass(BuildingTechnique)

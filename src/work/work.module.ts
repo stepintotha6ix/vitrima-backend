@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { WorkService } from './work.service';
 import { WorkController } from './Work.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { SubTypeSchema, WorkSchema, WorkTypeSchema } from './work.schema';
+import { BuildingTechniqueSchema, SubTypeSchema, WorkSchema, WorkTypeSchema } from './work.schema';
 import { UserService } from 'src/user/user.service';
 import { ApplicantSchema, ContractorSchema, UserSchema } from 'src/user/Schemas/user.schema';
 import { TagSchema } from 'src/tag/tag.schema';
@@ -19,7 +19,10 @@ import { TagSchema } from 'src/tag/tag.schema';
 				schema: SubTypeSchema,
 				name: 'SubType',
 			},
-			
+			,{
+				schema: BuildingTechniqueSchema,
+				name: 'BuildingTechnique',
+			},			
 			{
 				schema: WorkSchema,
 				name: 'Work',

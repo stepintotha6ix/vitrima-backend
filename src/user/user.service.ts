@@ -2,9 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 
 import { UpdateUserDto } from './dto/update-user.dto'
 import { InjectModel } from '@nestjs/mongoose'
-import { Model } from 'mongoose'
+import  { Model, ObjectId, Types } from 'mongoose'
 import { Applicant, Contractor } from './Schemas/user.schema'
 import { genSalt, hash } from 'bcryptjs'
+import { Work } from 'src/work/work.schema'
 
 @Injectable()
 export class UserService {
@@ -12,7 +13,9 @@ export class UserService {
 		@InjectModel('Contractor')
 		private readonly contractorModel: Model<Contractor>,
 		@InjectModel('Applicant')
-		private readonly applicantModel: Model<Applicant>
+		private readonly applicantModel: Model<Applicant>,
+		@InjectModel('Work')
+		private readonly workModel: Model<Work>
 	) {}
 	async contractorById(_id: string) {
 		const user = await this.contractorModel.findById(_id).exec()
@@ -24,11 +27,33 @@ export class UserService {
 		if (!user) throw new NotFoundException('Соискатель не найден')
 		return user
 	}
+	
+	async activate(activationLink) {
+		const contractorUser = await this.contractorModel.findOneAndUpdate(
+			{ activationLink },
+			{ $set: { isActivated: true } },
+			{ new: true }
+		);
+	
+		const applicantUser = await this.applicantModel.findOneAndUpdate(
+			{ activationLink },
+			{ $set: { isActivated: true } },
+			{ new: true }
+		);
+	
+		if (!contractorUser && !applicantUser) {
+			throw new Error('Неккоректная ссылка активации');
+		}
+	
+		const activatedUser = contractorUser || applicantUser;
+		return activatedUser;
+	}
+	
 
 	async getUserById(_id: string) {
 
 
-		const applicantUser = await this.applicantModel.findById(_id)
+		const applicantUser = await this.applicantModel.findById(_id).populate('subscriptions').populate('saved').exec()
 
 		// If the applicant user is found, return it
 		if (applicantUser) {
@@ -139,10 +164,6 @@ export class UserService {
 				}
 			}
 		}
-
-		// Добавьте обработку других полей, которые вы хотите обновлять
-
-		// Сохраняем обновленного пользователя в базе данных
 		await user.save()
 	}
 
@@ -163,4 +184,72 @@ export class UserService {
 
 		return deletedContractor
 	}
+
+
+	async subscribe(applicantId: string, contractorId: string): Promise<void> {
+		const applicant = await this.applicantModel.findById(applicantId);
+		const contractor = await this.contractorModel.findById(contractorId);
+	
+		if (applicant && contractor) {
+		  // Проверка, что подписчик - соискатель
+		  if (!applicant.isContractor) {
+			applicant.subscriptions.push(new Types.ObjectId(contractorId));
+			await applicant.save();
+	
+			// Добавить соискателя в список подписчиков подрядчика
+			contractor.subscribers.push(new Types.ObjectId(applicantId));
+			await contractor.save();
+		  } else {
+			throw new Error('Only applicants can subscribe to contractors.');
+		  }
+		}
+	  }
+	
+	  async unsubscribe(applicantId: string, contractorId: string): Promise<void> {
+		const applicant = await this.applicantModel.findById(applicantId);
+		const contractor = await this.contractorModel.findById(contractorId);
+	
+		if (applicant && contractor) {
+		  // Удалить подписку соискателя
+		  applicant.subscriptions = applicant.subscriptions.filter(id => id.toString() !== contractorId);
+		  await applicant.save();
+	
+		  // Удалить соискателя из списка подписчиков подрядчика
+		  contractor.subscribers = contractor.subscribers.filter(id => id.toString() !== applicantId);
+		  await contractor.save();
+		}
+	  }
+
+
+	  async addSavedWork(userId: string, workId: string): Promise<void> {
+		const user = await this.applicantModel.findById(userId);
+	
+		if (!user) {
+		  throw new Error('User not found');
+		}
+	
+		const workObjectId = new Types.ObjectId(workId);
+	
+		user.saved.push(workObjectId);
+		await user.save();
+	  }
+	
+	  async removeSavedWork(userId: string, workId: string): Promise<void> {
+		const user = await this.applicantModel.findById(userId);
+	
+		if (!user) {
+		  throw new Error('User not found');
+		}
+	
+		const workObjectId = new Types.ObjectId(workId);
+	
+		// Находим индекс элемента в массиве saved
+		const indexToRemove = user.saved.indexOf(workObjectId);
+	
+		if (indexToRemove !== -1) {
+		  // Используем splice для удаления элемента по индексу
+		  user.saved.splice(indexToRemove, 1);
+		  await user.save();
+		}
+	  }
 }

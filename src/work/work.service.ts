@@ -4,17 +4,18 @@ import {
 	NotFoundException,
 } from '@nestjs/common'
 import {
+	CreateBuildingTechniqueDto,
 	CreateSubTypeDto,
 	CreateWorkDto,
 	CreateWorkTypeDto,
 } from './dto/create-work.dto'
-import { UpdateWorkTypeDto } from './dto/update-work.dto'
-import { SubType, Work, WorkType } from './work.schema'
+import { BuildingTechnique, SubType, Work, WorkType } from './work.schema'
 import { InjectModel } from '@nestjs/mongoose'
 import mongoose, { Model, ObjectId, Types } from 'mongoose'
 
 import { UserService } from 'src/user/user.service'
 import { User } from 'src/user/Schemas/user.schema'
+import { UpdateWorkDto } from './dto/update-work.dto'
 
 @Injectable()
 export class WorkService {
@@ -22,6 +23,8 @@ export class WorkService {
 		@InjectModel('Work') private readonly workModel: Model<Work>,
 		@InjectModel('WorkType') private readonly workTypeModel: Model<WorkType>,
 		@InjectModel('SubType') private readonly subTypeModel: Model<SubType>,
+		@InjectModel('BuildingTechnique')
+		private readonly buildingTechniqueModel: Model<BuildingTechnique>,
 
 		private readonly contractorService: UserService
 	) {}
@@ -35,6 +38,34 @@ export class WorkService {
 		})
 		const workType = await newWorkType.save()
 		return workType
+	}
+	async createBuildingTechnique(workDto: CreateBuildingTechniqueDto) {
+		const newBuildingTechnique = new this.buildingTechniqueModel({
+			title: workDto.title,
+			description: workDto.description,
+			workTypeId: workDto.workTypeId,
+		})
+		const buildingTechnique = await newBuildingTechnique.save()
+		return buildingTechnique
+	}
+	async getAllBuildingTechniques(searchTerm?: string) {
+		let options = {}
+
+		if (searchTerm)
+			options = {
+				$or: [
+					{
+						title: new RegExp(searchTerm, 'i'),
+					},
+				],
+			}
+
+		return this.buildingTechniqueModel
+			.find(options)
+			.select('-password -updatedAt -__v')
+			.sort({ createdAt: 'desc' })
+
+			.exec()
 	}
 
 	async byWorkType(workTypeId: Types.ObjectId) {
@@ -55,7 +86,7 @@ export class WorkService {
 		return await this.workTypeModel.findById(id).populate('subTypes').exec()
 	}
 
-	async updateWorkType(_id: string, dto: UpdateWorkTypeDto) {
+	async updateWorkType(_id: string, dto) {
 		const updateDoc = await this.workTypeModel
 			.findByIdAndUpdate(_id, dto, {
 				new: true,
@@ -85,13 +116,6 @@ export class WorkService {
 	}
 
 	async createWork(workDto: CreateWorkDto) {
-		// const contractor = await this.contractorService.contractorById(
-		// 	workDto.contractorId
-		// )
-		// if (!contractor) {
-		// 	throw new NotFoundException('Contractor not found')
-		// }
-
 		const newWork = new this.workModel({
 			price: workDto.price,
 			workType: workDto.workType,
@@ -102,6 +126,7 @@ export class WorkService {
 			tags: workDto.tags,
 			slug: workDto.slug,
 			contractorId: workDto.contractorId,
+			buildingTechnique: workDto.buildingTechnique,
 		})
 		const work = await newWork.save()
 		return work
@@ -116,6 +141,7 @@ export class WorkService {
 			.populate('workType')
 			.populate('subTypes')
 			.populate('tags')
+			.populate('contractorId')
 
 			.exec()
 		if (!docs) throw new NotFoundException('Услуги не найдены')
@@ -144,6 +170,7 @@ export class WorkService {
 			.populate('tags')
 			.exec()
 	}
+
 	async getWorksWithFilters(
 		slug: string,
 		filterDto: {
@@ -151,80 +178,129 @@ export class WorkService {
 			subTypes?: string[]
 			minPrice?: number
 			maxPrice?: number
-		}
+			contractorType?: any
+			location?: any
+			buildingTechnique?: string
+		},
+		page: number,
+		limit: number
 	): Promise<Work[]> {
-		const { search, subTypes, minPrice, maxPrice } = filterDto
+		const {
+			search,
+			subTypes,
+			minPrice,
+			maxPrice,
+			contractorType,
+			location,
+			buildingTechnique,
+		} = filterDto
 
 		try {
-			let works = await this.workByWorkType(slug)
+			const workTypeData = await this.workTypeModel
+				.aggregate([{ $match: { slug } }, { $sample: { size: 25 } }])
+				.exec()
+
+			if (!workTypeData) {
+				throw new NotFoundException('WorkType не найден')
+			}
+
+			let query = this.workModel
+				.find({ workType: workTypeData })
+				.sort({ _id: -1 })
+				.populate('workType')
+				.populate('tags')
+				.populate('contractorId')
 
 			if (subTypes && subTypes.length > 0) {
-				works = works.filter((work) =>
-					work.subTypes.some((subType) =>
-						subTypes.includes(subType._id.toString())
-					)
-				)
+				query = query.find({
+					subTypes: { $in: subTypes },
+				})
+			}
+
+			if (buildingTechnique && buildingTechnique.length > 0) {
+				query = query.find({
+					buildingTechnique: { $in: buildingTechnique },
+				})
 			}
 
 			if (minPrice !== undefined) {
-				works = works.filter((work) => work.price >= minPrice)
+				query = query.find({ price: { $gte: minPrice } })
 			}
 
 			if (maxPrice !== undefined) {
-				works = works.filter((work) => work.price <= maxPrice)
+				query = query.find({ price: { $lte: maxPrice } })
+			}
+			if (location !== undefined) {
+				query = query.find({}) // Сначала сбросим текущий find
+				query = query.populate({
+					path: 'contractorId',
+					match: { location: location },
+					select: 'location',
+				})
+			}
+			if (contractorType !== undefined) {
+				query = query.find({}) // Сначала сбросим текущий find
+				query = query.populate({
+					path: 'contractorId',
+					match: { type: contractorType },
+					select: 'type',
+				})
 			}
 
 			if (search) {
-				works = works.filter((work) => work.slug.includes(search))
+				query = query.find({ slug: { $regex: new RegExp(search, 'i') } })
 			}
+			
+		
+			const startIndex = (page - 1) * limit
 
-			return works
+			const paginatedWorks = await query.skip(startIndex).limit(limit).exec()
+			const filteredWorks = paginatedWorks.filter(
+				(work) => work.contractorId !== null
+			)
+
+			return filteredWorks
 		} catch (error) {
 			console.error('Error fetching works with filters', error)
 			throw error
 		}
 	}
-	async workByWorkType(slug: string) {
-		const workTypeData = await this.workTypeModel.findOne({ slug }).exec()
 
-		// Если workType не найден, бросаем исключение
-		if (!workTypeData) {
-			throw new NotFoundException('WorkType не найден')
-		}
+	// async workByWorkType(slug: string, limit: number, skip: number = 0) {
+	// 	const workTypeData = await this.workTypeModel.findOne({ slug }).exec();
 
-		// Шаг 2: Использование данных WorkType для поиска работ
-		const docs = await this.workModel
-			.find({ workType: workTypeData._id })
-			.populate('workType')
-			.populate('tags')
-			.populate('contractorId')
-			.exec()
+	// 	if (!workTypeData) {
+	// 	  throw new NotFoundException('WorkType не найден');
+	// 	}
 
-		// Если работы не найдены, бросаем исключение
-		if (!docs || docs.length === 0) {
-			throw new NotFoundException('Работы не найдены')
-		}
+	// 	const docs = await this.workModel
+	// 	  .find({ workType: workTypeData._id })
+	// 	  .populate('workType')
+	// 	  .populate('tags')
+	// 	  .populate('contractorId')
+	// 	  .skip(skip)
+	// 	  .limit(limit)
+	// 	  .exec();
 
-		// Возвращаем результат
-		return docs
-	}
+	// 	if (!docs || docs.length === 0) {
+	// 	  throw new NotFoundException('Работы не найдены');
+	// 	}
+
+	// 	return docs;
+	//   }
 
 	async bySimilarSubType(subTypes: string[]) {
 		if (!subTypes || subTypes.length === 0) {
-			
 			throw new NotFoundException('Похожие работы не найдены')
 		}
-	
+
 		let works = await this.getAll()
-		
+
 		// Фильтрация работ по subTypes
 		works = works.filter((work) =>
-        work.subTypes.some((subType) =>
-            subTypes.includes(subType._id.toString())
-        )
-    );
-			return works;
-
+			work.subTypes.some((subType) => subTypes.includes(subType._id.toString()))
+		)
+		return works
 	}
 
 	async byId(_id: string) {
@@ -241,7 +317,7 @@ export class WorkService {
 		return doc
 	}
 
-	async update(_id: string, dto) {
+	async update(_id: string, dto: UpdateWorkDto) {
 		const workDoc = await this.workModel.findById(_id).exec()
 
 		if (!workDoc) {

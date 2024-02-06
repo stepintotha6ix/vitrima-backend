@@ -23,6 +23,7 @@ import { TagModule } from './tag/tag.module';
 import { ServicePriceModule } from './service-price/service-price.module';
 import { MessagesModule } from './message/messages.module'
 import { ChatModule } from './chat/chat.module';
+import { MailService } from './auth/mail.service'
 
 @Module({
 	imports: [
@@ -60,7 +61,7 @@ import { ChatModule } from './chat/chat.module';
 
 	],
 	controllers: [],
-	providers: [AuthService, HttpService, JwtService],
+	providers: [AuthService, HttpService, JwtService, MailService],
 })
 export class AppModule  {
 	

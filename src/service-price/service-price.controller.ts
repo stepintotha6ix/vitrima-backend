@@ -12,9 +12,9 @@ export class ServicePriceController {
   @UsePipes(new ValidationPipe())
 	@Post()
 	@HttpCode(200)
-	@Auth()
-	async create() {
-		return this.servicePriceService.create()
+	
+	async create(@Body() servicePriceDto: CreateServicePriceDto) {
+		return this.servicePriceService.create(servicePriceDto)
 	}
 
   @Get(`by-contractor/:contractorId`)
@@ -44,8 +44,10 @@ export class ServicePriceController {
 		return this.servicePriceService.update(id, dto)
 	}
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.servicePriceService.remove(+id);
-  }
+	@Delete(':id')
+	@HttpCode(200)
+	
+	async delete(@Param('id', IdValidationPipe) id: string) {
+		return this.servicePriceService.delete(id)
+	}
 }

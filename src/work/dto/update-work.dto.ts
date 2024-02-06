@@ -5,7 +5,3 @@ import { IsString } from 'class-validator';
 export class UpdateWorkDto extends PartialType(CreateWorkDto) {}
 
 
-export class UpdateWorkTypeDto {
-    @IsString()
-    subTypes: string[]
-}

@@ -14,16 +14,17 @@ export class ServicePriceService {
 		
 	) {}
 
-	async create() {
-		const defaultValue: CreateServicePriceDto = {
-			title: '',
-			price: 0,
-			contractorId: null
+	async create(servicePriceDto: CreateServicePriceDto) {
+		const newServicePrice = new this.servicePriceModel({
+			title: servicePriceDto.title,
+			price: servicePriceDto.price,
+			contractorId: servicePriceDto.contractorId
 			
 			
-		}
-		const servicePrice = await this.servicePriceModel.create(defaultValue)
-		return servicePrice._id
+		})
+		
+		const servicePrice = await newServicePrice.save()
+		return servicePrice
 	}
 
   async byContractor(contractorId: Types.ObjectId) {
@@ -54,7 +55,11 @@ export class ServicePriceService {
 	}
 
 
-  remove(id: number) {
-    return `This action removes a #${id} servicePrice`;
-  }
+	async delete(id: string) {
+		const deleteDoc = await this.servicePriceModel.findByIdAndRemove(id).exec()
+
+		if (!deleteDoc) throw new NotFoundException('Услуга не найдена')
+
+		return deleteDoc
+	}
 }

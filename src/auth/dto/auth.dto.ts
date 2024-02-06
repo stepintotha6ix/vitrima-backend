@@ -17,6 +17,7 @@ export class AuthContractorDto {
 	@IsString()
 	inn: string
 
+
 }
 
 export class AuthApplicantDto {

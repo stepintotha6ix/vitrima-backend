@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ServicePriceSchema } from './service-price.schema';
 import { ApplicantSchema, ContractorSchema } from 'src/user/Schemas/user.schema';
 import { UserService } from 'src/user/user.service';
+import { WorkSchema } from 'src/work/work.schema';
 
 @Module({
   controllers: [ServicePriceController],
@@ -22,7 +23,10 @@ import { UserService } from 'src/user/user.service';
 				schema: ApplicantSchema,
 				name: 'Applicant'
 			},
-			
+			{
+				schema: WorkSchema,
+				name: 'Work',
+			},
 		]),
 	],
 })

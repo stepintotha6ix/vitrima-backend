@@ -15,11 +15,18 @@ export class HttpService {
 	// Асинхронный метод для валидации ИНН
 	async validateInn(inn: string) {
 		const response = await axios.post(url, { query: inn }, { headers: headers })
-		console.log(response.data)
-		if (response.data === null ||response.data === undefined) {
+
+		if (response.data === null || response.data === undefined) {
 			throw new UnauthorizedException('Данный инн не найден')
 		}
-		return response
-		
+		const suggestions = response.data.suggestions
+
+		// Извлечение значения type из каждого элемента массива suggestions
+		const types = suggestions.map((suggestion) => suggestion.data.type)
+
+		// Вывод в консоль или использование types в вашем коде
+		console.log(types[0])
+
+		return types[0]
 	}
 }

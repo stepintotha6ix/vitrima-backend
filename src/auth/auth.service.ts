@@ -13,7 +13,8 @@ import { RefreshTokenDto } from './dto/refreshToken.dto'
 import { InjectModel } from '@nestjs/mongoose'
 import { HttpService } from 'src/http/http.service'
 import { ConfigService } from '@nestjs/config'
-
+const uuid = require('uuid');
+import { MailService } from './mail.service'
 @Injectable()
 export class AuthService {
 	constructor(
@@ -22,6 +23,7 @@ export class AuthService {
 		@InjectModel('Contractor')
 		private readonly contractorModel: Model<Contractor>,
 		private readonly httpService: HttpService,
+		private readonly mailService: MailService,
 	
 		private readonly jwtService: JwtService
 	) {}
@@ -37,25 +39,29 @@ export class AuthService {
 			)
 		}
 
-		const isValidInn = await this.httpService.validateInn(authDto.inn)
+		const type = await this.httpService.validateInn(authDto.inn)
 
-		if (isValidInn.data.suggestions.length === 0) {
+		if (type === undefined){ 
 			throw new BadRequestException(
-				'Некоректный инн, введите другой'
+				'Данного инн не существует'
 			)
-			
-		} else {
+		}else {
 			
 			const salt = await genSalt(10)
 			const hashedPassword = await hash(authDto.password, salt)
+			const activationLink = uuid.v4()
+
+
 
 			const newUser = new this.contractorModel({
 				email: authDto.email,
 				password: hashedPassword,
 				nickname: authDto.nickname,
 				inn: authDto.inn,
-				
+				type: type,
+				activationLink: activationLink 
 			})
+			await this.mailService.sendActivationMail(authDto.email, `${process.env.API_URL}/api/users/activate/${activationLink}`)
 
 			const user = await newUser.save()
 			const tokens = await this.issueTokenPair(String(user._id))
@@ -75,14 +81,18 @@ export class AuthService {
 			)
 
 		const salt = await genSalt(10)
+		const activationLink = uuid.v4()
+
+
 
 		const newUser = new this.applicantModel({
 			email: authDto.email,
 			password: await hash(authDto.password, salt),
 			nickname: authDto.nickname,
-			
+			activationLink: activationLink			
 			
 		})
+		await this.mailService.sendActivationMail(authDto.email, `${process.env.API_URL}/api/users/activate/${activationLink}`)
 
 		const user = await newUser.save()
 
@@ -93,6 +103,8 @@ export class AuthService {
 			...tokens,
 		}
 	}
+
+	
 
 	async getNewTokens({ refreshToken }: RefreshTokenDto) {
 		if (!refreshToken) {

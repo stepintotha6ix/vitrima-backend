@@ -8,7 +8,7 @@ export class User {
 	email: string
 	@Prop()
 	password: string
-	@Prop({unique: true})
+	@Prop({ unique: true })
 	nickname: string
 	@Prop({ default: false })
 	isAdmin: boolean
@@ -18,12 +18,15 @@ export class User {
 	_id: mongoose.Types.ObjectId
 
 	@Prop({ type: Date, default: Date.now })
-    createdAt: Date
+	createdAt: Date
 
-	@Prop({type: String})
+	@Prop({ type: String })
 	image: string
 
-	
+	@Prop()
+	isActivated: boolean
+	@Prop()
+	activationLink: string
 }
 export const UserSchema = SchemaFactory.createForClass(User)
 
@@ -32,24 +35,29 @@ export class Contractor extends User {
 	@Prop()
 	inn: string
 	@Prop([{ type: mongoose.Schema.Types.ObjectId, ref: 'Work' }])
-	works: mongoose.Types.ObjectId[];
-	@Prop()
-	subscribers: Applicant[]
+	works: mongoose.Types.ObjectId[]
+	@Prop([{ type: mongoose.Schema.Types.ObjectId, ref: 'Applicant' }])
+	subscribers: mongoose.Types.ObjectId[]
 	@Prop({ default: true })
 	isContractor: boolean
 	@Prop()
 	description: string
+	@Prop()
+	type: string
+	@Prop()
+	location: string
 }
 export const ContractorSchema = SchemaFactory.createForClass(Contractor)
 
 @Schema()
 export class Applicant extends User {
-	@Prop()
-	subscriptions: Contractor[]
+	@Prop([{ type: mongoose.Schema.Types.ObjectId, ref: 'Contractor' }])
+	subscriptions: mongoose.Types.ObjectId[]
 	@Prop({ default: false })
 	isContractor: boolean
 	@Prop()
-	overview : string
-
+	overview: string
+	@Prop([{ type: mongoose.Schema.Types.ObjectId, ref: 'Work' }])
+	saved: mongoose.Types.ObjectId[]
 }
 export const ApplicantSchema = SchemaFactory.createForClass(Applicant)

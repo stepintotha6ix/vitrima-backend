@@ -14,4 +14,6 @@ export class UpdateUserDto {
 	
 	image?: string
 
+	location?: any
+
 }

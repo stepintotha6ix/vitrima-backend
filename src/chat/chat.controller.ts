@@ -13,13 +13,13 @@ export class ChatController {
     return newChat;
   }
 
-  @Get(':userId')
+  @Get('/:userId')
   async getChatsByUserId(@Param('userId') userId: string) {
     const chats = await this.chatService.getChatsByUserId(userId);
     return chats;
   }
 
-  @Get('find/:firstUserId/:secondUserId')
+  @Get('/find/:firstUserId/:secondUserId')
   async findChatByUserIds(
     @Param('firstUserId') firstUserId: string,
     @Param('secondUserId') secondUserId: string,
