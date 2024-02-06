@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { WorkService } from './work.service';
-import { WorkController } from './Work.controller';
+import { WorkController } from './work.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BuildingTechniqueSchema, SubTypeSchema, WorkSchema, WorkTypeSchema } from './work.schema';
 import { UserService } from 'src/user/user.service';
