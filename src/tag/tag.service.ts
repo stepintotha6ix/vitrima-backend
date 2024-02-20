@@ -14,16 +14,20 @@ export class TagService {
      private readonly workService: WorkService,
 	) {}
 
-  async createTag() {
-		const defaultValue: CreateTagDto = {
-			title: '',
-			slug: '',
+ 
+	async createTag(servicePriceDto: CreateTagDto) {
+		const newServicePrice = new this.tagModel({
+			title: servicePriceDto.title,
+			
+			slug: servicePriceDto.slug
 			
 			
-		}
-		const genre = await this.tagModel.create(defaultValue)
-		return genre._id
+		})
+		
+		const tag = await newServicePrice.save()
+		return tag
 	}
+
 
   async getAll(searchTerm?: string) {
 		let options = {}

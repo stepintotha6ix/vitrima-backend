@@ -22,12 +22,13 @@ import { IdValidationPipe } from 'src/pipes/id.validation.pipe'
 export class TagController {
 	constructor(private readonly tagService: TagService) {}
 
-	//@UsePipes(new ValidationPipe())
+	
+	@UsePipes(new ValidationPipe())
 	@Post()
 	@HttpCode(200)
-	//@Auth('admin')
-	async create() {
-		return this.tagService.createTag()
+	
+	async create(@Body() tagDto: CreateTagDto) {
+		return this.tagService.createTag(tagDto)
 	}
 
 	@Get('by-slug/:slug')
