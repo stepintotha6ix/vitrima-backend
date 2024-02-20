@@ -64,7 +64,7 @@ export class MailService {
 <body>
     <div class="center-container">
         <div style="margin-top: 120px; margin-bottom: 120px;">
-            <p style="font-size: 20px; font-weight: 500; margin-bottom: 160px; color: black">Здравствуйте, это команда ВИТРИМЫ! Чтобы подтвердить почту, нажмите кнопку ниже</p>
+            <p style="font-size: 20px; font-weight: 500; margin-bottom: 160px; color: black">это команда ВИТРИМЫ! Чтобы подтвердить почту, нажмите кнопку ниже</p>
             <a href="${link}">ПОДТВЕРДИТЬ</a>
         </div>
         <div style="background-color: black; padding: 30px 15px;">
