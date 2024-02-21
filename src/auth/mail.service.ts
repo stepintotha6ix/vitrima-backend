@@ -7,8 +7,8 @@ export class MailService {
 
     constructor() {
         this.transporter = nodemailer.createTransport({
-            host:  "smtp.gmail.com",
-            port:  465,
+            host:  "vitrima.su",
+            port:  587,
             secure: true,
             socketTimeout: 5000,
             auth: {
