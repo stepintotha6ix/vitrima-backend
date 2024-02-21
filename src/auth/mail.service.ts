@@ -10,7 +10,7 @@ export class MailService {
             host:  "smtp.gmail.com",
             port:  465,
             secure: true,
-            connectionTimeout: 10000,
+            socketTimeout: 5000,
             auth: {
                 user: process.env.SMTP_USER,
                 pass: process.env.SMTP_PASSWORD
