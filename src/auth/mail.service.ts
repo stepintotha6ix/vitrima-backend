@@ -7,10 +7,11 @@ export class MailService {
 
     constructor() {
         this.transporter = nodemailer.createTransport({
-            host:  "vitrima.su",
-            port:  587,
+            host:  "smtp.gmail.com",
+            port:  465,
             secure: true,
             socketTimeout: 5000,
+            tls: { rejectUnauthorized: false },
             auth: {
                 user: process.env.SMTP_USER,
                 pass: process.env.SMTP_PASSWORD
