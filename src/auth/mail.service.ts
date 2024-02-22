@@ -1,27 +1,27 @@
-import { Injectable } from "@nestjs/common";
-const nodemailer = require("nodemailer");
+import { Injectable } from '@nestjs/common'
+const nodemailer = require('nodemailer')
 
 @Injectable()
 export class MailService {
-    private transporter;
+	private transporter
 
-    constructor() {
-        this.transporter = nodemailer.createTransport({
-            host:  "mail.hosting.reg.ru",
-            port:  465,
- auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASSWORD
-            }
-        })
-    }
-        async sendActivationMail(to,link){
-            await this.transporter.sendMail({
-                from: process.env.SMTP_USER,
-                to,
-                subject: 'Активация аккаунта на ' + process.env.API_URL,
-                text: '',
-                html:`
+	constructor() {
+		this.transporter = nodemailer.createTransport({
+			host: 'mail.hosting.reg.ru',
+			port: 465,
+			auth: {
+				user: process.env.SMTP_USER,
+				pass: process.env.SMTP_PASSWORD,
+			},
+		})
+	}
+	async sendActivationMail(to, link) {
+		await this.transporter.sendMail({
+			from: process.env.SMTP_USER,
+			to,
+			subject: 'Активация аккаунта на ' + process.env.API_URL,
+			text: '',
+			html: `
                 
                 <head>
     <meta charset="UTF-8">
@@ -71,7 +71,7 @@ export class MailService {
         </div>
     </div>
 </body>
-                `
-            })
-        }
+                `,
+		})
+	}
 }

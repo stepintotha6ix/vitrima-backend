@@ -61,7 +61,7 @@ export class AuthService {
 				type: type,
 				activationLink: activationLink 
 			})
-			await this.mailService.sendActivationMail(authDto.email, `${process.env.API_URL}/api/users/activate/${activationLink}`)
+			//await this.mailService.sendActivationMail(authDto.email, `${process.env.API_URL}/api/users/activate/${activationLink}`)
 
 			const user = await newUser.save()
 			const tokens = await this.issueTokenPair(String(user._id))
@@ -92,7 +92,7 @@ export class AuthService {
 			activationLink: activationLink			
 			
 		})
-		await this.mailService.sendActivationMail(authDto.email, `${process.env.API_URL}/api/users/activate/${activationLink}`)
+		//await this.mailService.sendActivationMail(authDto.email, `${process.env.API_URL}/api/users/activate/${activationLink}`)
 
 		const user = await newUser.save()
 
