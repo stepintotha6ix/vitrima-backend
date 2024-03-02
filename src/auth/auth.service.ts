@@ -13,7 +13,7 @@ import { RefreshTokenDto } from './dto/refreshToken.dto'
 import { InjectModel } from '@nestjs/mongoose'
 import { HttpService } from 'src/http/http.service'
 import { ConfigService } from '@nestjs/config'
-const uuid = require('uuid');
+const uuid = require('uuid')
 import { MailService } from './mail.service'
 @Injectable()
 export class AuthService {
@@ -24,7 +24,7 @@ export class AuthService {
 		private readonly contractorModel: Model<Contractor>,
 		private readonly httpService: HttpService,
 		private readonly mailService: MailService,
-	
+
 		private readonly jwtService: JwtService
 	) {}
 
@@ -35,62 +35,54 @@ export class AuthService {
 
 		if (oldUser) {
 			throw new BadRequestException(
-				'User with this email is already in the system'
+				'Данная почта уже используется'
 			)
 		}
+		let typeSEE = 'SELF-EMPLOYED'
+		const typeIP = await this.httpService.validateInnForIP(authDto.inn)
+		let typeSE = await this.httpService.validateInnForSE(authDto.inn)
+		if (typeSE.code === true) {
+			return typeSEE === 'SELF-EMPLOYED'
+		}
+		if (typeIP === undefined && typeSE.status === false) {
+			throw new BadRequestException('ИНН не найден')
+		}
 
-		const type = await this.httpService.validateInn(authDto.inn)
+		const salt = await genSalt(10)
+		const hashedPassword = await hash(authDto.password, salt)
+		const activationLink = uuid.v4()
 
-		if (type === undefined){ 
-			throw new BadRequestException(
-				'Данного инн не существует'
-			)
-		}else {
-			
-			const salt = await genSalt(10)
-			const hashedPassword = await hash(authDto.password, salt)
-			const activationLink = uuid.v4()
+		const newUser = new this.contractorModel({
+			email: authDto.email,
+			password: hashedPassword,
+			nickname: authDto.nickname,
+			inn: authDto.inn,
+			type: typeIP || typeSEE,
+			activationLink: activationLink,
+		})
+		//await this.mailService.sendActivationMail(authDto.email, `${process.env.API_URL}/api/users/activate/${activationLink}`)
 
+		const user = await newUser.save()
+		const tokens = await this.issueTokenPair(String(user._id))
 
-
-			const newUser = new this.contractorModel({
-				email: authDto.email,
-				password: hashedPassword,
-				nickname: authDto.nickname,
-				inn: authDto.inn,
-				type: type,
-				activationLink: activationLink 
-			})
-			//await this.mailService.sendActivationMail(authDto.email, `${process.env.API_URL}/api/users/activate/${activationLink}`)
-
-			const user = await newUser.save()
-			const tokens = await this.issueTokenPair(String(user._id))
-
-			return {
-				user: this.returnUserFields(user),
-				...tokens,
-			}
+		return {
+			user: this.returnUserFields(user),
+			...tokens,
 		}
 	}
 
 	async registerApplicant(authDto: AuthApplicantDto) {
 		const oldUser = await this.applicantModel.findOne({ email: authDto.email })
-		if (oldUser)
-			throw new BadRequestException(
-				'Данная почта уже используется'
-			)
+		if (oldUser) throw new BadRequestException('Данная почта уже используется')
 
 		const salt = await genSalt(10)
 		const activationLink = uuid.v4()
-
-
 
 		const newUser = new this.applicantModel({
 			email: authDto.email,
 			password: await hash(authDto.password, salt),
 			nickname: authDto.nickname,
-			activationLink: activationLink			
-			
+			activationLink: activationLink,
 		})
 		//await this.mailService.sendActivationMail(authDto.email, `${process.env.API_URL}/api/users/activate/${activationLink}`)
 
@@ -104,15 +96,14 @@ export class AuthService {
 		}
 	}
 
-	
-
 	async getNewTokens({ refreshToken }: RefreshTokenDto) {
 		if (!refreshToken) {
 			throw new UnauthorizedException('Пожалуйста, войдите снова')
 		}
 
-		const result = await this.jwtService.verifyAsync(refreshToken, 
-			{secret: process.env.JWT_SECRET})
+		const result = await this.jwtService.verifyAsync(refreshToken, {
+			secret: process.env.JWT_SECRET,
+		})
 		if (!result) {
 			throw new UnauthorizedException('Токен невалиден или закончился')
 		}
@@ -123,10 +114,10 @@ export class AuthService {
 		if (!applicant && !contractor) {
 			throw new UnauthorizedException('Пользователь не найден')
 		}
-		const user = applicant || contractor;
-		const userId = String(user._id);
-		const tokens = await this.issueTokenPair(userId);
-	
+		const user = applicant || contractor
+		const userId = String(user._id)
+		const tokens = await this.issueTokenPair(userId)
+
 		return {
 			user: this.returnUserFields(applicant || contractor),
 			...tokens,
@@ -181,7 +172,7 @@ export class AuthService {
 			email: user.email,
 			nickname: user.nickname,
 			isContractor: user.isContractor,
-			isAdmin: user.isAdmin
+			isAdmin: user.isAdmin,
 		}
 	}
 }
