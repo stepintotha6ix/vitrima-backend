@@ -14,7 +14,7 @@ export class MessageController {
     const savedMessage = await this.messageService.createMessage(messageData);
 
     // Notify connected clients about the new message
-    this.messageGateway.server.emit('newMessage', savedMessage);
+    this.messageGateway.server.emit('client-path', savedMessage);
 
     return savedMessage;
   }
@@ -22,6 +22,6 @@ export class MessageController {
   @Get('/:chatId')
   async getMessagesByChatId(@Param('chatId') chatId: string) {
     const messages = await this.messageService.getMessagesByChatId(chatId);
-    return messages;
+   return messages;
   }
 }

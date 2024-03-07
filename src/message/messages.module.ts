@@ -8,18 +8,14 @@ import { MessageSchema } from './messages.model'
 import { MessageController } from './messages.controller'
 import { ChatService } from 'src/chat/chat.service'
 import { ChatSchema } from 'src/chat/chat.model'
-
 @Module({
 	imports: [
-		MongooseModule.forFeature([
-			{ name: 'Message', schema: MessageSchema },
-			{
-				name: 'Chat',
-				schema: ChatSchema,
-			},
-		]),
+	  MongooseModule.forFeature([
+		{ name: 'Message', schema: MessageSchema },
+		{ name: 'Chat', schema: ChatSchema },
+	  ]),
 	],
 	controllers: [MessageController],
-	providers: [ChatService, MessageService, MessageGateway],
-})
-export class MessagesModule {}
+	providers: [MessageGateway, ChatService, MessageService],
+  })
+  export class MessagesModule {}

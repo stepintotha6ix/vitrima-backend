@@ -24,6 +24,11 @@ import { ServicePriceModule } from './service-price/service-price.module';
 import { MessagesModule } from './message/messages.module'
 import { ChatModule } from './chat/chat.module';
 import { MailService } from './auth/mail.service'
+import { MessageGateway } from './message/messages.gateway'
+import { MessageService } from './message/messages.service'
+import { ChatService } from './chat/chat.service'
+import { MessageSchema } from './message/messages.model'
+import { ChatSchema } from './chat/chat.model'
 
 @Module({
 	imports: [
@@ -42,6 +47,15 @@ import { MailService } from './auth/mail.service'
 				schema: UserSchema,
 				name: 'User',
 			},
+			{
+				schema: MessageSchema,
+				name: 'Message',
+			},
+			{
+				schema: ChatSchema,
+				name: 'Chat',
+			}
+			
 		]),
 		MongooseModule.forRootAsync({
 			imports: [ConfigModule],
@@ -61,7 +75,7 @@ import { MailService } from './auth/mail.service'
 
 	],
 	controllers: [],
-	providers: [AuthService, HttpService, JwtService, MailService],
+	providers: [AuthService, HttpService, JwtService, MailService, MessageGateway, MessageService,ChatService],
 })
 export class AppModule  {
 	
