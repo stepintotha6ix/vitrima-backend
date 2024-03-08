@@ -30,7 +30,6 @@ export class MessageGateway
 
 	@SubscribeMessage('server-path')
 	handleMessage(@MessageBody() dto: any, @ConnectedSocket() client, payload: any): void {
-		const res = {type: 'someType', dto}
-		client.emit('client-path', res)
+		client.emit('client-path', dto)
 	}
 }
