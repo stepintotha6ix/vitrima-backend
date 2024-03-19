@@ -3,6 +3,7 @@ import { ensureDir, writeFile } from 'fs-extra'
 import { FileResponse } from './file.interface'
 import { path } from 'app-root-path'
 
+import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class FileService {
 	async saveFiles(
@@ -14,15 +15,15 @@ export class FileService {
 
 		const res: FileResponse[] = await Promise.all(
 			files.map(async (file) => {
-				await writeFile(`${uploadFolder}/${file.originalname}`, file.buffer)
-
-				return {
-					url: `/uploads/${folder}/${file.originalname}`,
-					name: file.originalname,
-				}
+			  const uniqueFileName = `${uuidv4()}_${file.originalname}`;
+			  await writeFile(`${uploadFolder}/${uniqueFileName}`, file.buffer);
+	  
+			  return {
+				url: `/uploads/${folder}/${uniqueFileName}`,
+				name: uniqueFileName,
+			  };
 			})
-		)
-
+		  );
 		return res
 	}
 }
