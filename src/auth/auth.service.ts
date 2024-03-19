@@ -2,6 +2,7 @@ import {
 	BadRequestException,
 	Injectable,
 	InternalServerErrorException,
+	Res,
 	UnauthorizedException,
 } from '@nestjs/common'
 import { AuthApplicantDto, AuthContractorDto, LoginDto } from './dto/auth.dto'
@@ -84,12 +85,12 @@ export class AuthService {
 			nickname: authDto.nickname,
 			activationLink: activationLink,
 		})
-		await this.mailService.sendActivationMail(authDto.email, `${process.env.API_URL}/users/activate/${activationLink}`)
-
+		await this.mailService.sendActivationMail(authDto.email, `${process.env.CLIENT_URL}/activate/${activationLink}`)
+	
 		const user = await newUser.save()
 
 		const tokens = await this.issueTokenPair(String(user._id))
-
+		
 		return {
 			user: this.returnUserFields(user),
 			...tokens,
