@@ -84,7 +84,7 @@ export class AuthService {
 			nickname: authDto.nickname,
 			activationLink: activationLink,
 		})
-		await this.mailService.sendActivationMail(authDto.email, `${process.env.API_URL}/api/users/activate/${activationLink}`)
+		await this.mailService.sendActivationMail(authDto.email, `${process.env.API_URL}/users/activate/${activationLink}`)
 
 		const user = await newUser.save()
 
