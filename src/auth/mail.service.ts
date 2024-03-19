@@ -7,7 +7,7 @@ export class MailService {
 
 	constructor() {
 		this.transporter = nodemailer.createTransport({
-			host: 'mail.hosting.reg.ru',
+			host: 'smtp.gmail.com',
 			port: 465,
             // защищенный 465, host mail.hosting.reg.ru
 			auth: {
