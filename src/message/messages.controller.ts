@@ -1,6 +1,6 @@
 // message.controller.ts
 
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { MessageService } from './messages.service';
 import { Message } from './messages.model';
 import { MessageGateway } from './messages.gateway';
@@ -23,5 +23,9 @@ export class MessageController {
   async getMessagesByChatId(@Param('chatId') chatId: string) {
     const messages = await this.messageService.getMessagesByChatId(chatId);
    return messages;
+  }
+  @Put('/change-status/:id') 
+  async changeStatusMessage(@Param('id') id:string){
+    return await this.messageService.changeStatusMessage(id)
   }
 }

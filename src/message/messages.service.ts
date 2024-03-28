@@ -13,16 +13,30 @@ export class MessageService {
 	) {}
 
 	async createMessage(messageData: Partial<Message>): Promise<Message> {
-		const newMessage = new this.messageModel(messageData)
-		const savedMessage = await newMessage.save()
-
-		return savedMessage
-	}
+		// Устанавливаем значение поля status в "sent"
+		messageData.status = "sent";
+	  
+		// Создаем новый объект типа Message
+		const newMessage = new this.messageModel(messageData);
+	  
+		// Сохраняем новое сообщение в базе данных
+		const savedMessage = await newMessage.save();
+	  
+		return savedMessage;
+	  }
 
 	async getMessagesByChatId(chatId: string): Promise<Message[]> {
 		
 		return this.messageModel.find({
 			chatId: chatId,
 		})
+	}
+	async changeStatusMessage(_id){
+		const updateMessage = await this.messageModel
+		.findByIdAndUpdate(_id,  {
+			status: "read",
+		})
+		.exec()
+		return updateMessage
 	}
 }
